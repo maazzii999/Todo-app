@@ -1,86 +1,125 @@
-console.log("JS Loaded");
 document.addEventListener("DOMContentLoaded", function () {
 
-    let input = document.getElementById("taskInput");
-    let errorMsg = document.getElementById("errorMsg");
+    const input = document.getElementById("taskInput");
+    const errorMsg = document.getElementById("errorMsg");
 
-    loadTasks();
-
-    // Enter key support
-    input.addEventListener("keypress", function (e) {
-        if (e.key === "Enter") addTask();
-        console.log("Button clicked");
-    });
-
+    // Add task
     window.addTask = function () {
-        let task = input.value.trim();
-        
-        if (task === "") {
+        let text = input.value.trim();
+
+        if (text === "") {
             errorMsg.style.display = "block";
             return;
-        } else {
-            errorMsg.style.display = "none";
         }
 
-        let taskObj = { text: task, completed: false };
+        errorMsg.style.display = "none";
 
-        createTaskElement(taskObj);
-        saveTask(taskObj);
+        let tasks = getTasks();
+        tasks.push({ text: text, completed: false });
 
+        saveTasks(tasks);
         input.value = "";
-        
+        renderTasks();
     };
 
-    function createTaskElement(taskObj) {
-        let li = document.createElement("li");
-        li.textContent = taskObj.text;
+    // Get tasks
+    function getTasks() {
+        return JSON.parse(localStorage.getItem("tasks")) || [];
+    }
 
-        if (taskObj.completed) {
-            li.style.textDecoration = "line-through";
-            li.style.color = "gray";
-        }
+    // Save tasks
+    function saveTasks(tasks) {
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
 
-        li.onclick = function () {
-            if (!taskObj.completed) {
-                taskObj.completed = true;
-                li.style.textDecoration = "line-through";
-                li.style.color = "gray";
-            } else {
-                li.remove();
+    // Render tasks
+    function renderTasks() {
+        const list = document.getElementById("taskList");
+        list.innerHTML = "";
+
+        let tasks = getTasks();
+
+        tasks.forEach((task, index) => {
+            let li = document.createElement("li");
+
+            let span = document.createElement("span");
+            span.textContent = task.text;
+
+            if (task.completed) {
+                span.style.textDecoration = "line-through";
+                span.style.color = "gray";
             }
-            updateStorage();
-        };
 
-        document.getElementById("taskList").appendChild(li);
+            // Toggle complete
+            span.onclick = function () {
+                tasks[index].completed = !tasks[index].completed;
+                saveTasks(tasks);
+                renderTasks();
+            };
+
+            // Edit button
+            let editBtn = document.createElement("button");
+            editBtn.textContent = "✏️";
+
+            editBtn.onclick = function () {
+
+    let inputField = document.createElement("input");
+    inputField.type = "text";
+    inputField.value = task.text;
+
+    li.innerHTML = "";
+    li.appendChild(inputField);
+
+    inputField.focus();
+
+    function saveEdit() {
+        let newText = inputField.value.trim();
+
+        if (newText !== "") {
+            tasks[index].text = newText;
+            saveTasks(tasks);
+            renderTasks();
+        } else {
+            renderTasks();
+        }
     }
 
-    function saveTask(taskObj) {
-        let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-        tasks.push(taskObj);
-        localStorage.setItem("tasks", JSON.stringify(tasks));
-    }
+    // Save on Enter
+    inputField.addEventListener("keypress", function (e) {
+        if (e.key === "Enter") {
+            saveEdit();
+        }
+    });
 
-    function loadTasks() {
-        let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-        tasks.forEach(task => createTaskElement(task));
-    }
+    // Save on clicking outside
+    inputField.addEventListener("blur", function () {
+        saveEdit();
+    });
+};
 
-    function updateStorage() {
-        let listItems = document.querySelectorAll("#taskList li");
-        let tasks = [];
+            // Delete button
+            let deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "🗑️";
 
-        listItems.forEach(li => {
-            tasks.push({
-                text: li.textContent,
-                completed: li.style.textDecoration === "line-through"
-            });
+            deleteBtn.onclick = function () {
+                tasks.splice(index, 1);
+                saveTasks(tasks);
+                renderTasks();
+            };
+
+            li.appendChild(span);
+            li.appendChild(editBtn);
+            li.appendChild(deleteBtn);
+
+            document.getElementById("taskList").appendChild(li);
         });
-
-        localStorage.setItem("tasks", JSON.stringify(tasks));
     }
 
-    document.getElementById("taskInput").addEventListener("input", function () {
-    document.getElementById("errorMsg").style.display = "none";
-});
+    // Enter key
+    input.addEventListener("keypress", function (e) {
+        if (e.key === "Enter") addTask();
+    });
 
+    // Load tasks
+    renderTasks();
 });

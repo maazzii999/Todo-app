@@ -87,3 +87,50 @@ li {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+.filters {
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.filters button {
+    flex: 1;
+    margin: 0 5px;
+    background: #ddd;
+    color: #333;
+}
+
+.filters button:hover {
+    background: #bbb;
+}
+
+li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+li span {
+    flex: 1;
+    text-align: left;
+}
+
+li button {
+    margin-left: 5px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+li button:hover {
+    transform: scale(1.2);
+}
+
+li input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
